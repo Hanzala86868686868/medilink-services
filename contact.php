@@ -1,43 +1,35 @@
 <?php
-session_start(); // Ensure the session is started
+session_start();
 
-// Check if the user is logged in by verifying the session
 if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
-    // If not logged in, redirect to login page
     header('Location: auth/login.php');
     exit();
 }
 
-// Use `user_id` from session and fetch user details from the database
 if (isset($_SESSION['user_id'])) {
     $userId = $_SESSION['user_id'];
 
     require_once 'includes/db.php';
 
-    // Fetch user info based on session `user_id`
     $sql = "SELECT username, email FROM users WHERE id = '$userId'";
     $result = $conn->query($sql);
 
     if ($result->num_rows > 0) {
-        // Fetch user data
         $user_data = $result->fetch_assoc();
         $username = $user_data['username'];
         $email = $user_data['email'];
     } else {
-        // Handle the case if user not found
         die("User not found.");
     }
 } else {
     echo "Session not set properly.";
-    exit(); // Exit if the session is not set
+    exit(); 
 }
 
-// Handle form submission
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['message']) && !empty($_POST['message'])) {
         $message = mysqli_real_escape_string($conn, $_POST['message']);
 
-        // Insert the message with user info into the contact_messages table
         $sql = "INSERT INTO contact_messages (user_id, username, email, message) 
         VALUES ('$userId', '$username', '$email', '$message')";
 
@@ -51,7 +43,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 
-// Fetch all messages (optional: if you want to display them in the admin panel)
 $sql = "SELECT * FROM contact_messages ORDER BY created_at DESC";
 $result = $conn->query($sql);
 ?>
